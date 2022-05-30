@@ -39,8 +39,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "mempools.h"
 #include "virtual_motor.h"
 #include "foc_math.h"
+
 
 // Private variables
 static volatile bool m_dccal_done = false;
@@ -664,12 +666,39 @@ void mcpwm_foc_stop_pwm(bool is_second_motor) {
  * The duty cycle to use.
  */
 void mcpwm_foc_set_duty(float dutyCycle) {
-	get_motor_now()->m_control_mode = CONTROL_MODE_DUTY;
-	get_motor_now()->m_duty_cycle_set = dutyCycle;
+	if (dutyCycle > 0.04) {
+		
+		get_motor_now()->m_control_mode = CONTROL_MODE_DUTY;
+		get_motor_now()->m_duty_cycle_set = dutyCycle;
 
-	if (get_motor_now()->m_state != MC_STATE_RUNNING) {
-		get_motor_now()->m_motor_released = false;
-		get_motor_now()->m_state = MC_STATE_RUNNING;
+		if (get_motor_now()->m_state != MC_STATE_RUNNING) {
+			get_motor_now()->m_motor_released = false;
+			get_motor_now()->m_state = MC_STATE_RUNNING;
+		}
+	}
+	else if (dutyCycle > 0.02) {
+		extern float offset_angle;
+		offset_angle = fmodf(offset_angle, 360);
+		if (offset_angle < 0.0) {
+			offset_angle += 360.0;
+		}
+		get_motor_now()->m_control_mode = CONTROL_MODE_POS;
+		get_motor_now()->m_pos_pid_set = offset_angle;
+
+
+		if (get_motor_now()->m_state != MC_STATE_RUNNING) {
+			get_motor_now()->m_motor_released = false;
+			get_motor_now()->m_state = MC_STATE_RUNNING;
+		}
+	}
+	else {		
+		get_motor_now()->m_control_mode = CONTROL_MODE_DUTY;
+		get_motor_now()->m_duty_cycle_set = 0;
+
+		if (get_motor_now()->m_state != MC_STATE_RUNNING) {
+			get_motor_now()->m_motor_released = false;
+			get_motor_now()->m_state = MC_STATE_RUNNING;
+		}
 	}
 }
 

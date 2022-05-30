@@ -76,12 +76,12 @@
 // The default app is UART in case the UART port is used for
 // firmware updates.
 #ifndef APPCONF_APP_TO_USE
-#define APPCONF_APP_TO_USE					APP_UART
+#define APPCONF_APP_TO_USE					APP_PPM
 #endif
 
 // PPM app configureation
 #ifndef APPCONF_PPM_CTRL_TYPE
-#define APPCONF_PPM_CTRL_TYPE				PPM_CTRL_TYPE_NONE
+#define APPCONF_PPM_CTRL_TYPE				PPM_CTRL_TYPE_DUTY_NOREV
 #endif
 #ifndef APPCONF_PPM_PID_MAX_ERPM
 #define APPCONF_PPM_PID_MAX_ERPM			15000

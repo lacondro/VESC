@@ -50,6 +50,7 @@
 // Global variables
 volatile uint16_t ADC_Value[HW_ADC_CHANNELS + HW_ADC_CHANNELS_EXTRA];
 volatile float ADC_curr_norm_value[6];
+float offset_angle;
 
 typedef struct {
 	mc_configuration m_conf;
@@ -127,6 +128,8 @@ static void update_override_limits(volatile motor_if_state_t *motor, volatile mc
 static void run_timer_tasks(volatile motor_if_state_t *motor);
 static void update_stats(volatile motor_if_state_t *motor);
 static volatile motor_if_state_t *motor_now(void);
+
+
 
 // Function pointers
 static void(*pwn_done_func)(void) = 0;
@@ -1341,9 +1344,10 @@ float mc_interface_get_pid_pos_now(void) {
 void mc_interface_update_pid_pos_offset(float angle_now, bool store) {
 	mc_configuration *mcconf = mempools_alloc_mcconf();
 	*mcconf = *mc_interface_get_configuration();
-
 	mcconf->p_pid_offset += mc_interface_get_pid_pos_now() - angle_now;
 	utils_norm_angle(&mcconf->p_pid_offset);
+	
+	offset_angle = mcconf->p_pid_offset;
 
 	if (store) {
 		conf_general_store_mc_configuration(mcconf, mc_interface_get_motor_thread() == 2);
